@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Music Player</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 2rem; }
+        #reader { width: 300px; margin-bottom: 1rem; }
+        iframe { width: 300px; height: 80px; border: none; display: none; }
+    </style>
+</head>
+<body>
+<h1>Scan je muziek QR</h1>
+<div id="reader"></div>
+<iframe id="spotifyPlayer" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+<script>
+    function isSpotifyUrl(url) {
+        return url.includes("open.spotify.com/track") || url.includes("spotify.com/playlist");
+    }
+
+    function getEmbedUrl(spotifyUrl) {
+        const embedUrl = spotifyUrl.replace("open.spotify.com", "open.spotify.com/embed");
+        return embedUrl.split("?")[0];
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    const config = { fps: 10, qrbox: 250 };
+
+    html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        qrCodeMessage => {
+            if (isSpotifyUrl(qrCodeMessage)) {
+                const embedUrl = getEmbedUrl(qrCodeMessage);
+                const player = document.getElementById("spotifyPlayer");
+                player.src = embedUrl;
+                player.style.display = "block";
+            } else {
+                alert("Geen geldige Spotify-link gescand.");
+            }
+        },
+        errorMessage => {
+            // Stil houden tenzij je foutmeldingen wilt loggen
+        }
+    ).catch(err => {
+        console.error("Camera kon niet worden gestart", err);
+    });
+</script>
+</body>
+</html>
